@@ -97,8 +97,8 @@ export default function Dashboard({ onLogout }) {
           {/* Staff management */}
           <div className="bg-white rounded-xl p-6 shadow space-y-3">
             <h2 className="font-semibold">Staff Management</h2>
-            <button onClick={()=>navigate("/staff")} className="w-full border rounded py-2">View Registered Staff</button>
-            <button onClick={()=>navigate("/staff/add")} className="w-full border rounded py-2">Add New Staff</button>
+            <button onClick={()=>navigate("/users")} className="w-full border rounded py-2">View Registered Staff</button>
+            <button onClick={()=>navigate("/")} className="w-full border rounded py-2">Add New Staff</button>
           </div>
 
           {/* Pending requests */}
@@ -125,9 +125,21 @@ export default function Dashboard({ onLogout }) {
           </div>
         </div>
 
+        
+
         {/* Recent entries */}
+               {/* Recent entries */}
         <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="font-semibold mb-4">Recent ROI Entries</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-semibold">Recent ROI Entries</h2>
+            <button
+              onClick={() => navigate("/add")}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+            >
+              ➕ Add Entry
+            </button>
+          </div>
+
           <table className="w-full border text-sm">
             <thead className="bg-gray-100">
               <tr>
@@ -141,22 +153,45 @@ export default function Dashboard({ onLogout }) {
             </thead>
             <tbody>
               {entries.length === 0 ? (
-                <tr><td colSpan={6} className="text-center p-3">No entries found</td></tr>
-              ) : entries.map(e=>(
-                <tr key={e._id}>
-                  <td className="p-2 border">{new Date(e.date).toLocaleDateString()}</td>
-                  <td className="p-2 border">${e.totalRevenue}</td>
-                  <td className="p-2 border">${e.purchaseCost.reduce((a,c)=>a+c.amount,0)}</td>
-                  <td className="p-2 border">${e.totalRevenue - e.purchaseCost.reduce((a,c)=>a+c.amount,0)}</td>
-                  <td className="p-2 border">{((e.totalRevenue - e.purchaseCost.reduce((a,c)=>a+c.amount,0)) / e.purchaseCost.reduce((a,c)=>a+c.amount,0) * 100).toFixed(1)}%</td>
-                  <td className="p-2 border">
-                    <button onClick={()=>navigate(`/entries/${e._id}`)} className="px-2 py-1 border rounded">View</button>
+                <tr>
+                  <td colSpan={6} className="text-center p-3">
+                    No entries found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                entries.map((e) => (
+                  <tr key={e._id}>
+                    <td className="p-2 border">{new Date(e.date).toLocaleDateString()}</td>
+                    <td className="p-2 border">${e.totalRevenue}</td>
+                    <td className="p-2 border">
+                      ${e.purchaseCost.reduce((a, c) => a + c.amount, 0)}
+                    </td>
+                    <td className="p-2 border">
+                      ${e.totalRevenue - e.purchaseCost.reduce((a, c) => a + c.amount, 0)}
+                    </td>
+                    <td className="p-2 border">
+                      {(
+                        ((e.totalRevenue - e.purchaseCost.reduce((a, c) => a + c.amount, 0)) /
+                          e.purchaseCost.reduce((a, c) => a + c.amount, 0)) *
+                        100
+                      ).toFixed(1)}
+                      %
+                    </td>
+                    <td className="p-2 border">
+                      <button
+                        onClick={() => navigate(`/entries/${e._id}`)}
+                        className="px-2 py-1 border rounded"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
       </main>
     </div>
   );

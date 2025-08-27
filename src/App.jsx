@@ -8,6 +8,7 @@ import StaffDashboard from "./pages/staffDashboard";
 import { useQuery } from "@tanstack/react-query";
 import client from "./api/client";
 import PrivateLayout from "./layout/mainLayout";
+import Users from "./pages/User";
 
 export default function App() {
   const { data: me, isLoading } = useQuery({
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/entries/:id" element={<EntryDetails />} />
         <Route path="/add" element={<AddEntry />} />
         <Route path="/requests" element={<Requests />} />
+        {me?.role === "OWNER" && <Route path="/users" element={<Users />} />}
       </Route>
     </Routes>
   );
