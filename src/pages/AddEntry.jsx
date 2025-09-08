@@ -2,17 +2,18 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { FiPlus, FiChevronLeft } from "react-icons/fi";
 import client from "../api/client";
 
 export default function AddEntry() {
   const navigate = useNavigate();
 
-  // main state
-  const [date, setDate] = useState("");
+  // ✅ Default date to today
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState(today);
+
   const [totalRevenue, setTotalRevenue] = useState("");
   const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
-
-  // expenses
   const [expenses, setExpenses] = useState({
     staffSalary: [{ name: "", amount: "" }],
     staffAccommodation: [{ name: "", amount: "" }],
@@ -31,7 +32,6 @@ export default function AddEntry() {
     other: [{ reason: "", amount: "" }],
   });
 
-  // mutation
   const mutation = useMutation({
     mutationFn: (payload) => client.post("/roi", payload),
     onSuccess: () => {
@@ -40,7 +40,6 @@ export default function AddEntry() {
     },
   });
 
-  // helper to handle dynamic arrays
   const handleArrayChange = (field, index, key, value) => {
     const arr = [...expenses[field]];
     arr[index][key] = value;
@@ -55,223 +54,185 @@ export default function AddEntry() {
     mutation.mutate({
       date,
       totalRevenue: Number(totalRevenue),
-      purchaseCost: purchaseCost.map((p) => ({
-        item: p.item,
-        amount: Number(p.amount),
-      })),
+      purchaseCost: purchaseCost.map((p) => ({ item: p.item, amount: Number(p.amount) })),
       expenses: {
         ...expenses,
-        staffSalary: expenses.staffSalary.map((s) => ({
-          name: s.name,
-          amount: Number(s.amount),
-        })),
-        staffAccommodation: expenses.staffAccommodation.map((s) => ({
-          name: s.name,
-          amount: Number(s.amount),
-        })),
-        other: expenses.other.map((o) => ({
-          reason: o.reason,
-          amount: Number(o.amount),
-        })),
+        staffSalary: expenses.staffSalary.map((s) => ({ name: s.name, amount: Number(s.amount) })),
+        staffAccommodation: expenses.staffAccommodation.map((s) => ({ name: s.name, amount: Number(s.amount) })),
+        other: expenses.other.map((o) => ({ reason: o.reason, amount: Number(o.amount) })),
       },
     });
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">Add ROI Entry</h1>
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <h1 className="text-2xl font-semibold text-gray-800">➕ Add ROI Entry</h1>
 
-      {/* Date */}
-      <div className="mb-3">
-        <label className="block text-sm">Date</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
-      </div>
-
-      {/* Total Revenue */}
-      <div className="mb-3">
-        <label className="block text-sm">Total Revenue</label>
-        <input
+      {/* Basic Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MinimalInput label="Date" type="date" value={date} onChange={setDate} />
+        <MinimalInput
+          label="Total Revenue"
           type="number"
           value={totalRevenue}
-          onChange={(e) => setTotalRevenue(e.target.value)}
-          className="border p-2 w-full rounded"
+          onChange={setTotalRevenue}
+          placeholder="₹"
         />
       </div>
 
       {/* Purchase Cost */}
-      <div className="mb-4">
-        <div className="font-semibold mb-2">Purchase Cost</div>
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium text-gray-700">Purchase Cost</h2>
         {purchaseCost.map((p, i) => (
-          <div key={i} className="flex gap-2 mb-2">
-            <input
+          <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MinimalInput
               placeholder="Item"
               value={p.item}
-              onChange={(e) => {
+              onChange={(val) => {
                 const arr = [...purchaseCost];
-                arr[i].item = e.target.value;
+                arr[i].item = val;
                 setPurchaseCost(arr);
               }}
-              className="border p-2 flex-1 rounded"
             />
-            <input
+            <MinimalInput
               placeholder="Amount"
               type="number"
               value={p.amount}
-              onChange={(e) => {
+              onChange={(val) => {
                 const arr = [...purchaseCost];
-                arr[i].amount = e.target.value;
+                arr[i].amount = val;
                 setPurchaseCost(arr);
               }}
-              className="border p-2 w-32 rounded"
             />
           </div>
         ))}
         <button
           type="button"
           onClick={() => setPurchaseCost([...purchaseCost, { item: "", amount: "" }])}
-          className="px-3 py-1 border rounded"
+          className="flex items-center gap-2 text-blue-600 text-sm font-medium hover:underline"
         >
-          + Add Item
+          <FiPlus /> Add Item
         </button>
       </div>
 
       {/* Expenses */}
-      <div className="mt-6">
-        <h2 className="font-semibold mb-3">Expenses</h2>
+      <div className="space-y-6">
+        <h2 className="text-lg font-medium text-gray-700">Expenses</h2>
 
         {/* Staff Salary */}
-        <div className="mb-4">
-          <div className="font-medium">Staff Salary</div>
-          {expenses.staffSalary.map((s, i) => (
-            <div key={i} className="flex gap-2 mb-2">
-              <input
-                placeholder="Name"
-                value={s.name}
-                onChange={(e) => handleArrayChange("staffSalary", i, "name", e.target.value)}
-                className="border p-2 flex-1 rounded"
-              />
-              <input
-                placeholder="Amount"
-                type="number"
-                value={s.amount}
-                onChange={(e) => handleArrayChange("staffSalary", i, "amount", e.target.value)}
-                className="border p-2 w-32 rounded"
-              />
-            </div>
-          ))}
-          <button
-            onClick={() => addArrayItem("staffSalary", { name: "", amount: "" })}
-            className="px-3 py-1 border rounded"
-          >
-            + Add Staff
-          </button>
-        </div>
+        <ExpenseArray
+          title="Staff Salary"
+          field="staffSalary"
+          data={expenses.staffSalary}
+          handleChange={handleArrayChange}
+          addArrayItem={addArrayItem}
+        />
 
         {/* Staff Accommodation */}
-        <div className="mb-4">
-          <div className="font-medium">Staff Accommodation</div>
-          {expenses.staffAccommodation.map((s, i) => (
-            <div key={i} className="flex gap-2 mb-2">
-              <input
-                placeholder="Name"
-                value={s.name}
-                onChange={(e) => handleArrayChange("staffAccommodation", i, "name", e.target.value)}
-                className="border p-2 flex-1 rounded"
-              />
-              <input
-                placeholder="Amount"
-                type="number"
-                value={s.amount}
-                onChange={(e) => handleArrayChange("staffAccommodation", i, "amount", e.target.value)}
-                className="border p-2 w-32 rounded"
-              />
-            </div>
-          ))}
-          <button
-            onClick={() => addArrayItem("staffAccommodation", { name: "", amount: "" })}
-            className="px-3 py-1 border rounded"
-          >
-            + Add Accommodation
-          </button>
-        </div>
+        <ExpenseArray
+          title="Staff Accommodation"
+          field="staffAccommodation"
+          data={expenses.staffAccommodation}
+          handleChange={handleArrayChange}
+          addArrayItem={addArrayItem}
+        />
 
-        {/* Simple single-value fields */}
-        {[
-          ["food", "Food & Refreshment"],
-          ["rent", "Rent"],
-          ["electricity", "Electricity"],
-          ["travelFuel", "Travel & Fuel"],
-          ["mobInternet", "Mob & Internet"],
-          ["maintenance", "Maintenance"],
-          ["transport", "Transport"],
-          ["marketing", "Marketing"],
-          ["consulting", "Consulting"],
-          ["software", "Software"],
-          ["incentive", "Incentive"],
-          ["stockClearance", "Stock Clearance Sale"],
-        ].map(([key, label]) => (
-          <div key={key} className="mb-3">
-            <label className="block text-sm">{label}</label>
-            <input
+        {/* Single-value fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            ["food", "Food & Refreshment"],
+            ["rent", "Rent"],
+            ["electricity", "Electricity"],
+            ["travelFuel", "Travel & Fuel"],
+            ["mobInternet", "Mob & Internet"],
+            ["maintenance", "Maintenance"],
+            ["transport", "Transport"],
+            ["marketing", "Marketing"],
+            ["consulting", "Consulting"],
+            ["software", "Software"],
+            ["incentive", "Incentive"],
+            ["stockClearance", "Stock Clearance Sale"],
+          ].map(([key, label]) => (
+            <MinimalInput
+              key={key}
+              label={label}
               type="number"
               value={expenses[key]}
-              onChange={(e) =>
-                setExpenses({ ...expenses, [key]: e.target.value })
-              }
-              className="border p-2 w-full rounded"
+              onChange={(val) => setExpenses({ ...expenses, [key]: val })}
+              placeholder="₹"
             />
-          </div>
-        ))}
-
-        {/* Other */}
-        <div className="mb-4">
-          <div className="font-medium">Other</div>
-          {expenses.other.map((o, i) => (
-            <div key={i} className="flex gap-2 mb-2">
-              <input
-                placeholder="Reason"
-                value={o.reason}
-                onChange={(e) => handleArrayChange("other", i, "reason", e.target.value)}
-                className="border p-2 flex-1 rounded"
-              />
-              <input
-                placeholder="Amount"
-                type="number"
-                value={o.amount}
-                onChange={(e) => handleArrayChange("other", i, "amount", e.target.value)}
-                className="border p-2 w-32 rounded"
-              />
-            </div>
           ))}
-          <button
-            onClick={() => addArrayItem("other", { reason: "", amount: "" })}
-            className="px-3 py-1 border rounded"
-          >
-            + Add Other
-          </button>
         </div>
+
+        {/* Other Expenses */}
+        <ExpenseArray
+          title="Other"
+          field="other"
+          data={expenses.other}
+          handleChange={handleArrayChange}
+          addArrayItem={addArrayItem}
+        />
       </div>
 
       {/* Sticky Footer */}
-      <div className="sticky bottom-0 bg-white border-t py-3 flex justify-between">
+      <div className="sticky bottom-0 bg-white border-t py-4 flex justify-end gap-3 px-6">
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 border rounded"
+          className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium"
         >
-          Cancel
+          <FiChevronLeft /> Cancel
         </button>
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 bg-black text-white rounded"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
         >
-          Save
+          Save Entry
         </button>
       </div>
+    </div>
+  );
+}
+
+// ✅ Minimal input component
+function MinimalInput({ label, value, onChange, placeholder, type = "text" }) {
+  return (
+    <div className="space-y-1">
+      {label && <label className="block text-sm text-gray-600">{label}</label>}
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border-b border-gray-300 focus:border-blue-500 focus:outline-none py-1 text-sm"
+      />
+    </div>
+  );
+}
+
+// ✅ ExpenseArray reusable component
+function ExpenseArray({ title, field, data, handleChange, addArrayItem }) {
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-gray-700">{title}</h3>
+      {data.map((item, i) => (
+        <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.keys(item).map((key) => (
+            <MinimalInput
+              key={key}
+              placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+              type={key === "amount" ? "number" : "text"}
+              value={item[key]}
+              onChange={(val) => handleChange(field, i, key, val)}
+            />
+          ))}
+        </div>
+      ))}
+      <button
+        onClick={() => addArrayItem(field, Object.fromEntries(Object.keys(data[0]).map((k) => [k, ""])))}
+        className="flex items-center gap-2 text-blue-600 text-sm font-medium hover:underline"
+      >
+        <FiPlus /> Add {title}
+      </button>
     </div>
   );
 }

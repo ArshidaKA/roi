@@ -9,6 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import client from "./api/client";
 import PrivateLayout from "./layout/mainLayout";
 import Users from "./pages/User";
+import Entries from "./pages/entries";
+import RegisterStaff from "./pages/Register";
+import LoadingSpinner from "./pages/compoents/LoadingSpinner";
 
 export default function App() {
   const { data: me, isLoading } = useQuery({
@@ -16,7 +19,13 @@ export default function App() {
     queryFn: async () => (await client.get("/auth/me")).data.user,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+if (isLoading) {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <LoadingSpinner />
+    </div>
+  );
+}
 
   return (
     <Routes>
@@ -30,9 +39,15 @@ export default function App() {
           element={me?.role === "OWNER" ? <Dashboard /> : <StaffDashboard />}
         />
         <Route path="/entries/:id" element={<EntryDetails />} />
+        <Route path="/register" element={<RegisterStaff/>} />
+
+        
         <Route path="/add" element={<AddEntry />} />
         <Route path="/requests" element={<Requests />} />
         {me?.role === "OWNER" && <Route path="/users" element={<Users />} />}
+        <Route path="/entries" element={<Entries/>} />
+
+
       </Route>
     </Routes>
   );

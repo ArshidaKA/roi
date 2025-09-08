@@ -1,10 +1,9 @@
-// src/pages/Auth.jsx
+// src/pages/RegisterStaff.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import client from "../utils/client";
 
-export default function Auth() {
-  const [mode, setMode] = useState("login"); // "login" | "register"
+export default function RegisterStaff() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -16,22 +15,14 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     try {
-      let res;
-      if (mode === "login") {
-        res = await client.post("/auth/login", {
-          email: form.email,
-          password: form.password,
-        });
-      } else {
-        res = await client.post("/auth/register", form);
-      }
+      const res = await client.post("/auth/staff", form, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-      }
-
+      alert("Staff Registered ✅");
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
@@ -39,15 +30,13 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-6">
         <h1 className="text-2xl font-bold text-center text-gray-800">
-          {mode === "login" ? "Welcome Back 👋" : "Create an Account"}
+          Register Staff 👨‍💼
         </h1>
         <p className="text-center text-gray-500 text-sm">
-          {mode === "login"
-            ? "Login to access your dashboard"
-            : "Sign up to get started"}
+          Owners can add new staff members here
         </p>
 
         {error && (
@@ -57,17 +46,15 @@ export default function Auth() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "register" && (
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          )}
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Full Name"
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+            required
+          />
           <input
             type="email"
             name="email"
@@ -91,33 +78,17 @@ export default function Auth() {
             type="submit"
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium shadow hover:bg-blue-700 transition"
           >
-            {mode === "login" ? "Login" : "Register"}
+            Register Staff
           </button>
         </form>
 
-        {/* Mode Switch */}
-        <div className="flex justify-center text-sm gap-2">
-          {mode === "login" ? (
-            <>
-              <span>Don’t have an account?</span>
-              <button
-                onClick={() => setMode("register")}
-                className="text-blue-600 hover:underline"
-              >
-                Register
-              </button>
-            </>
-          ) : (
-            <>
-              <span>Already have an account?</span>
-              <button
-                onClick={() => setMode("login")}
-                className="text-blue-600 hover:underline"
-              >
-                Login
-              </button>
-            </>
-          )}
+        <div className="text-center mt-4 text-sm">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="text-blue-600 hover:underline"
+          >
+            ← Back to Dashboard
+          </button>
         </div>
       </div>
     </div>
