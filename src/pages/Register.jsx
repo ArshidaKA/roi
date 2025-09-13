@@ -1,7 +1,10 @@
-// src/pages/RegisterStaff.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import client from "../utils/client";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 export default function RegisterStaff() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -15,17 +18,50 @@ export default function RegisterStaff() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
-      const res = await client.post("/auth/staff", form, {
+      await client.post("/auth/staff", form, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      alert("Staff Registered ✅");
+      // ✅ Small success alert
+      await MySwal.fire({
+        title: "Success!",
+        text: "Staff Registered ✅",
+        icon: "success",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "OK",
+        width: "300px",       // small width
+        padding: "1rem",      // reduce padding
+        timer: 2000,
+        timerProgressBar: true,
+        customClass: {
+          popup: "small-swal"
+        }
+      });
+
+      setForm({ name: "", email: "", password: "" });
       navigate("/dashboard");
+
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      const message = err.response?.data?.message || "Something went wrong";
+      setError(message);
+
+      // ❌ Small error alert
+      MySwal.fire({
+        title: "Error!",
+        text: message,
+        icon: "error",
+        confirmButtonColor: "#3b82f6",
+        confirmButtonText: "OK",
+        width: "300px",
+        padding: "1rem",
+        customClass: {
+          popup: "small-swal"
+        }
+      });
     }
   };
 
@@ -86,6 +122,7 @@ export default function RegisterStaff() {
           <button
             onClick={() => navigate("/dashboard")}
             className="text-blue-600 hover:underline"
+            
           >
             ← Back to Dashboard
           </button>

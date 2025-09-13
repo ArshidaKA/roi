@@ -1,19 +1,33 @@
 // src/pages/AddEntry.jsx
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiChevronLeft } from "react-icons/fi";
 import client from "../api/client";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 export default function AddEntry() {
   const navigate = useNavigate();
 
-  // ✅ Default date to today
+  // ✅ Fetch logged-in user
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => (await client.get("/auth/me")).data.user,
+  });
+
+  // ✅ Fetch all existing entries
+  const { data: entries = [] } = useQuery({
+    queryKey: ["entries"],
+    queryFn: async () => (await client.get("/roi")).data,
+  });
+
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
-
   const [totalRevenue, setTotalRevenue] = useState("");
-  const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
+   const [purchaseCost, setPurchaseCost] = useState([{ name: "", amount: "" }]);
   const [expenses, setExpenses] = useState({
     staffSalary: [{ name: "", amount: "" }],
     staffAccommodation: [{ name: "", amount: "" }],
@@ -35,8 +49,12 @@ export default function AddEntry() {
   const mutation = useMutation({
     mutationFn: (payload) => client.post("/roi", payload),
     onSuccess: () => {
-      alert("Entry saved ✅");
-      navigate("/dashboard");
+      MySwal.fire({
+        icon: "success",
+        title: "Saved!",
+        text: "Entry saved successfully ✅",
+        confirmButtonColor: "#2563eb",
+      }).then(() => navigate("/dashboard"));
     },
   });
 
@@ -51,16 +69,56 @@ export default function AddEntry() {
   };
 
   const handleSubmit = () => {
-    mutation.mutate({
-      date,
-      totalRevenue: Number(totalRevenue),
-      purchaseCost: purchaseCost.map((p) => ({ item: p.item, amount: Number(p.amount) })),
-      expenses: {
-        ...expenses,
-        staffSalary: expenses.staffSalary.map((s) => ({ name: s.name, amount: Number(s.amount) })),
-        staffAccommodation: expenses.staffAccommodation.map((s) => ({ name: s.name, amount: Number(s.amount) })),
-        other: expenses.other.map((o) => ({ reason: o.reason, amount: Number(o.amount) })),
-      },
+    // ✅ Check if entry already exists for selected date
+    const duplicate = entries.some(
+      (entry) => entry.date.split("T")[0] === date
+    );
+
+    if (duplicate) {
+      MySwal.fire({
+        icon: "error",
+        title: "Duplicate Entry",
+        text: "An entry for this date already exists ❌",
+        confirmButtonColor: "#2563eb",
+      });
+      return;
+    }
+
+    MySwal.fire({
+      title: "Are you sure?",
+      text: "Please confirm all values are correct before saving.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, save it",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#6b7280",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mutation.mutate({
+          date,
+          totalRevenue: Number(totalRevenue),
+          purchaseCost: purchaseCost.map((p) => ({
+            item: p.name,
+            amount: Number(p.amount),
+          })),
+          expenses: {
+            ...expenses,
+            staffSalary: expenses.staffSalary.map((s) => ({
+              name: s.name,
+              amount: Number(s.amount),
+            })),
+            staffAccommodation: expenses.staffAccommodation.map((s) => ({
+              name: s.name,
+              amount: Number(s.amount),
+            })),
+            other: expenses.other.map((o) => ({
+              reason: o.reason,
+              amount: Number(o.amount),
+            })),
+          },
+        });
+      }
     });
   };
 
@@ -86,13 +144,12 @@ export default function AddEntry() {
         {purchaseCost.map((p, i) => (
           <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MinimalInput
-              placeholder="Item"
-              value={p.item}
-              onChange={(val) => {
-                const arr = [...purchaseCost];
-                arr[i].item = val;
-                setPurchaseCost(arr);
-              }}
+              placeholder="Name"
+  value={p.name} onChange={(val) => {
+   const arr = [...purchaseCost];
+  arr[i].name = val;
+   setPurchaseCost(arr);
+ }}
             />
             <MinimalInput
               placeholder="Amount"
@@ -108,7 +165,9 @@ export default function AddEntry() {
         ))}
         <button
           type="button"
-          onClick={() => setPurchaseCost([...purchaseCost, { item: "", amount: "" }])}
+          onClick={() =>
+            setPurchaseCost([...purchaseCost, { name: "", amount: "" }])
+          }
           className="flex items-center gap-2 text-blue-600 text-sm font-medium hover:underline"
         >
           <FiPlus /> Add Item
@@ -119,7 +178,6 @@ export default function AddEntry() {
       <div className="space-y-6">
         <h2 className="text-lg font-medium text-gray-700">Expenses</h2>
 
-        {/* Staff Salary */}
         <ExpenseArray
           title="Staff Salary"
           field="staffSalary"
@@ -128,7 +186,6 @@ export default function AddEntry() {
           addArrayItem={addArrayItem}
         />
 
-        {/* Staff Accommodation */}
         <ExpenseArray
           title="Staff Accommodation"
           field="staffAccommodation"
@@ -137,7 +194,6 @@ export default function AddEntry() {
           addArrayItem={addArrayItem}
         />
 
-        {/* Single-value fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
             ["food", "Food & Refreshment"],
@@ -164,7 +220,6 @@ export default function AddEntry() {
           ))}
         </div>
 
-        {/* Other Expenses */}
         <ExpenseArray
           title="Other"
           field="other"
@@ -193,7 +248,6 @@ export default function AddEntry() {
   );
 }
 
-// ✅ Minimal input component
 function MinimalInput({ label, value, onChange, placeholder, type = "text" }) {
   return (
     <div className="space-y-1">
@@ -203,13 +257,13 @@ function MinimalInput({ label, value, onChange, placeholder, type = "text" }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        onWheel={(e) => type === "number" && e.target.blur()}
         className="w-full border-b border-gray-300 focus:border-blue-500 focus:outline-none py-1 text-sm"
       />
     </div>
   );
 }
 
-// ✅ ExpenseArray reusable component
 function ExpenseArray({ title, field, data, handleChange, addArrayItem }) {
   return (
     <div className="space-y-2">
@@ -228,7 +282,12 @@ function ExpenseArray({ title, field, data, handleChange, addArrayItem }) {
         </div>
       ))}
       <button
-        onClick={() => addArrayItem(field, Object.fromEntries(Object.keys(data[0]).map((k) => [k, ""])))}
+        onClick={() =>
+          addArrayItem(
+            field,
+            Object.fromEntries(Object.keys(data[0]).map((k) => [k, ""]))
+          )
+        }
         className="flex items-center gap-2 text-blue-600 text-sm font-medium hover:underline"
       >
         <FiPlus /> Add {title}

@@ -7,6 +7,7 @@ export default function Auth() {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ Loading state
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -16,6 +17,7 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true); // ✅ Start loading
 
     try {
       let res;
@@ -35,6 +37,8 @@ export default function Auth() {
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false); // ✅ Stop loading
     }
   };
 
@@ -89,36 +93,44 @@ export default function Auth() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium shadow hover:bg-blue-700 transition"
+            disabled={loading} // ✅ prevent multiple clicks
+            className={`w-full py-3 rounded-lg font-medium shadow transition ${
+              loading
+                ? "bg-blue-400 text-white cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
-            {mode === "login" ? "Login" : "Register"}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 100 16v-4l-3.5 3.5L12 24v-4a8 8 0 01-8-8z"
+                  ></path>
+                </svg>
+                <span>Processing...</span>
+              </div>
+            ) : mode === "login" ? (
+              "Login"
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
-
-        {/* Mode Switch */}
-        <div className="flex justify-center text-sm gap-2">
-          {mode === "login" ? (
-            <>
-              <span>Don’t have an account?</span>
-              <button
-                onClick={() => setMode("register")}
-                className="text-blue-600 hover:underline"
-              >
-                Register
-              </button>
-            </>
-          ) : (
-            <>
-              <span>Already have an account?</span>
-              <button
-                onClick={() => setMode("login")}
-                className="text-blue-600 hover:underline"
-              >
-                Login
-              </button>
-            </>
-          )}
-        </div>
       </div>
     </div>
   );

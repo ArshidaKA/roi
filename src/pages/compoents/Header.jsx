@@ -1,26 +1,43 @@
 // NavbarWithLogout.jsx
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import Swal from "sweetalert2";
 import client from "../../api/client";
 
 export default function NavbarWithLogout({ user }) {
-  const navigate = useNavigate();
-
   // ✅ Fetch pending requests count
   const { data: pendingCount } = useQuery({
     queryKey: ["pendingRequestsCount"],
     queryFn: async () => {
       const res = await client.get("/roi/edit-requests/pending/count");
-      return res.data.count; // backend should return { count: number }
+      return res.data.count;
     },
-    enabled: !!user, // only fetch if logged in
+    enabled: !!user,
   });
 
-  console.log(pendingCount,"hjjjjjjjjjj")
-  // ✅ Logout handler
-  function handleLogout() {
-    localStorage.removeItem("token");
-    window.location.href = "/";
+  // ✅ Logout handler with confirmation
+  async function handleLogout() {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out from your account.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Logout",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      confirmButtonColor: "#2563eb", // blue-600
+      cancelButtonColor: "#6b7280", // gray-500
+      customClass: {
+        popup: "rounded-xl shadow-lg",
+        confirmButton: "px-4 py-2 rounded-lg font-semibold",
+        cancelButton: "px-4 py-2 rounded-lg font-medium",
+      },
+    });
+
+    if (result.isConfirmed) {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    }
   }
 
   return (
@@ -61,7 +78,7 @@ export default function NavbarWithLogout({ user }) {
             >
               Requests
               {pendingCount > 0 && (
-                <span className="absolute -top-1 -right-4 bg-orange-500 text-xs px-1  rounded-full font-bold">
+                <span className="absolute -top-1 -right-4 bg-orange-500 text-xs px-1 rounded-full font-bold">
                   {pendingCount}
                 </span>
               )}

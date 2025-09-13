@@ -1,1 +1,6 @@
 @import "tailwindcss";
+/* small SweetAlert popup */
+.small-swal {
+  font-size: 0.85rem;  /* smaller font reduces height */
+  line-height: 1.2;    /* tighter spacing */
+}

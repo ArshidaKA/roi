@@ -12,6 +12,8 @@ import Users from "./pages/User";
 import Entries from "./pages/entries";
 import RegisterStaff from "./pages/Register";
 import LoadingSpinner from "./pages/compoents/LoadingSpinner";
+import EditEntry from "./pages/EditEntry";
+import EntrySummary from "./pages/EntrySummary";
 
 export default function App() {
   const { data: me, isLoading } = useQuery({
@@ -41,11 +43,13 @@ if (isLoading) {
         <Route path="/entries/:id" element={<EntryDetails />} />
         <Route path="/register" element={<RegisterStaff/>} />
 
-        
+          <Route path="/entries/:id/edit" element={<EditEntry />} />
         <Route path="/add" element={<AddEntry />} />
         <Route path="/requests" element={<Requests />} />
         {me?.role === "OWNER" && <Route path="/users" element={<Users />} />}
         <Route path="/entries" element={<Entries/>} />
+        <Route path="/entries/summary" element={<EntrySummary />} />
+
 
 
       </Route>
