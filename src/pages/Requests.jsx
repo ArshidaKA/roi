@@ -32,7 +32,6 @@ export default function Requests() {
     },
     keepPreviousData: true,
   });
-  console.log(data,"fgsfwsyuik")
 
   const mutation = useMutation({
     mutationFn: async ({ id, action }) =>
@@ -57,6 +56,36 @@ export default function Requests() {
       mutation.mutate({ id: dialog.id, action: dialog.action });
     }
     setDialog({ open: false, action: null, id: null });
+  }
+
+  // ✅ Formatter for readable field paths
+  function formatFieldPath(path) {
+    if (!path) return "";
+
+    // Remove array indexes like [0], [1], etc.
+    let cleanPath = path.replace(/\[\d+\]/g, "");
+
+    // Split by dot
+    const parts = cleanPath.split(".");
+
+    // Mapping for friendly names
+    const fieldMap = {
+      roiRate: "ROI Rate",
+      amount: "Amount",
+      date: "Date",
+      entries: "Entry",
+      customer: "Customer",
+      name: "Customer Name",
+      address: "Address",
+      phone: "Phone Number",
+      email: "Email",
+      status: "Status",
+      reason: "Reason",
+    };
+
+    return parts
+      .map((part) => fieldMap[part] || part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
   }
 
   return (
@@ -118,11 +147,21 @@ export default function Requests() {
                     i % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
-                  <td className="p-4 border-t border-gray-200">{new Date(r.createdAt).toLocaleDateString()}</td>
-                  <td className="p-4 border-t border-gray-200 font-medium text-gray-900">{r.fieldPath}</td>
-                  <td className="p-4 border-t border-gray-200 text-blue-600 font-semibold">{String(r.newValue)}</td>
-                  <td className="p-4 border-t border-gray-200 text-gray-600">{r.reason}</td>
-                  <td className="p-4 border-t border-gray-200">{r.requestedBy?.name}</td>
+                  <td className="p-4 border-t border-gray-200">
+                    {new Date(r.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="p-4 border-t border-gray-200 font-medium text-gray-900">
+                    {formatFieldPath(r.fieldPath)}
+                  </td>
+                  <td className="p-4 border-t border-gray-200 text-blue-600 font-semibold">
+                    {String(r.newValue)}
+                  </td>
+                  <td className="p-4 border-t border-gray-200 text-gray-600">
+                    {r.reason}
+                  </td>
+                  <td className="p-4 border-t border-gray-200">
+                    {r.requestedBy?.name}
+                  </td>
                   <td className="p-4 border-t border-gray-200">
                     <span
                       className={`px-3 py-1.5 rounded-full text-xs font-medium
@@ -144,13 +183,25 @@ export default function Requests() {
                       {r.status === "PENDING" ? (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => setDialog({ open: true, action: "APPROVED", id: r._id })}
+                            onClick={() =>
+                              setDialog({
+                                open: true,
+                                action: "APPROVED",
+                                id: r._id,
+                              })
+                            }
                             className="px-4 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                           >
                             Approve
                           </button>
                           <button
-                            onClick={() => setDialog({ open: true, action: "REJECTED", id: r._id })}
+                            onClick={() =>
+                              setDialog({
+                                open: true,
+                                action: "REJECTED",
+                                id: r._id,
+                              })
+                            }
                             className="px-4 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                           >
                             Reject
@@ -166,7 +217,10 @@ export default function Requests() {
 
               {(!data?.requests || data.requests.length === 0) && (
                 <tr>
-                  <td colSpan="7" className="p-6 text-center text-gray-500 italic">
+                  <td
+                    colSpan="7"
+                    className="p-6 text-center text-gray-500 italic"
+                  >
                     No requests found
                   </td>
                 </tr>
@@ -200,7 +254,9 @@ export default function Requests() {
       {/* Confirmation Dialog */}
       <ConfirmDialog
         open={dialog.open}
-        title={dialog.action === "APPROVED" ? "Confirm Approval" : "Confirm Rejection"}
+        title={
+          dialog.action === "APPROVED" ? "Confirm Approval" : "Confirm Rejection"
+        }
         message={
           dialog.action === "APPROVED"
             ? "Are you sure you want to approve this request?"

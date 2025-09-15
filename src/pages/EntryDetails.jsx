@@ -72,10 +72,17 @@ export default function EntryDetails() {
   const totalOperationsCost = totalExpenses;
   const netProfit = grossIncome - (commission + totalOperationsCost);
 
-  const staffHasApproved = (myApproved?.requests || []).length > 0;
-  console.log(entry.purchaseCost,",.,")
+// Build a set of approved field paths for this entry (like in EditEntry)
+const approvedPaths = new Set(
+  (myApproved?.requests || [])
+    .filter((r) => !r.consumed) // ignore already used requests
+    .map((r) => r.fieldPath)
+);
 
+const staffHasApproved = approvedPaths.size > 0;
+  console.log("staffHasApproved", staffHasApproved);
 
+  
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Header */}
@@ -87,14 +94,20 @@ export default function EntryDetails() {
           ← Back
         </button>
 
-        {(me?.role === "OWNER" || (me?.role === "STAFF" && staffHasApproved)) && (
-          <button
-            onClick={() => navigate(`/entries/${id}/edit`)}
-            className="px-4 py-1 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition shadow-md"
-          >
-             Edit
-          </button>
-        )}
+       {/* Edit Button */}
+{(me?.role === "OWNER" ||
+  (me?.role === "STAFF" && staffHasApproved)) ? (
+  <button
+    onClick={() => navigate(`/entries/${id}/edit`)}
+    className={`px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition shadow-md
+      ${me?.role === "STAFF" && !staffHasApproved ? "opacity-50 cursor-not-allowed hover:from-yellow-400 hover:to-yellow-500" : ""}
+    `}
+    disabled={me?.role === "STAFF" && !staffHasApproved}
+  >
+    ✏️ Edit
+  </button>
+) : null}
+
       </div>
 
       {/* Title */}
@@ -218,19 +231,18 @@ export default function EntryDetails() {
                 className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Select item --</option>
-       {entry.purchaseCost
-  .filter((p) => p.amount > 0)
-  .map((p, i) => (
-    <optgroup key={i} label={`Item ${i + 1}`}>
-      <option value={`purchaseCost[${i}].name`}>
-        Name ({p.name})
-      </option>
-      <option value={`purchaseCost[${i}].amount`}>
-        Amount ({p.amount})
-      </option>
-    </optgroup>
-  ))}
-
+                {entry.purchaseCost
+                  .filter((p) => p.amount > 0)
+                  .map((p, i) => (
+                    <optgroup key={i} label={`Item ${i + 1}`}>
+                      <option value={`purchaseCost[${i}].item`}>
+                        Name ({p.item})
+                      </option>
+                      <option value={`purchaseCost[${i}].amount`}>
+                        Amount ({p.amount})
+                      </option>
+                    </optgroup>
+                  ))}
               </select>
             </div>
           )}
@@ -323,34 +335,15 @@ export default function EntryDetails() {
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-         <button
-  onClick={() => {
-    // Resolve old value from entry using fieldPath
-    let oldValue = "";
-    try {
-      if (fieldPath) {
-        // Use lodash.get to safely extract nested field values
-        const get = require("lodash.get");
-        oldValue = get(entry, fieldPath);
-      }
-    } catch (e) {
-      console.error("Error resolving old value", e);
-    }
-
-    reqEdit.mutate({
-      entryId: id,
-      fieldPath,
-      oldValue,   // 👈 send old value
-      newValue,
-      reason,
-    });
-  }}
-  disabled={!fieldPath || !newValue || !reason}
-  className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition shadow-sm"
->
-  Send Request
-</button>
-
+            <button
+              onClick={() =>
+                reqEdit.mutate({ entryId: id, fieldPath, newValue, reason })
+              }
+              disabled={!fieldPath || !newValue || !reason}
+              className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition shadow-sm"
+            >
+              Send Request
+            </button>
             <button
               onClick={() => {
                 setFieldPath("");

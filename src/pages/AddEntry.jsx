@@ -27,7 +27,7 @@ export default function AddEntry() {
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
   const [totalRevenue, setTotalRevenue] = useState("");
-   const [purchaseCost, setPurchaseCost] = useState([{ name: "", amount: "" }]);
+  const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
   const [expenses, setExpenses] = useState({
     staffSalary: [{ name: "", amount: "" }],
     staffAccommodation: [{ name: "", amount: "" }],
@@ -99,7 +99,7 @@ export default function AddEntry() {
           date,
           totalRevenue: Number(totalRevenue),
           purchaseCost: purchaseCost.map((p) => ({
-            item: p.name,
+            item: p.item,
             amount: Number(p.amount),
           })),
           expenses: {
@@ -144,12 +144,13 @@ export default function AddEntry() {
         {purchaseCost.map((p, i) => (
           <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MinimalInput
-              placeholder="Name"
-  value={p.name} onChange={(val) => {
-   const arr = [...purchaseCost];
-  arr[i].name = val;
-   setPurchaseCost(arr);
- }}
+              placeholder="Item"
+              value={p.item}
+              onChange={(val) => {
+                const arr = [...purchaseCost];
+                arr[i].item = val;
+                setPurchaseCost(arr);
+              }}
             />
             <MinimalInput
               placeholder="Amount"
@@ -166,7 +167,7 @@ export default function AddEntry() {
         <button
           type="button"
           onClick={() =>
-            setPurchaseCost([...purchaseCost, { name: "", amount: "" }])
+            setPurchaseCost([...purchaseCost, { item: "", amount: "" }])
           }
           className="flex items-center gap-2 text-blue-600 text-sm font-medium hover:underline"
         >
