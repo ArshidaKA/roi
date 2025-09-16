@@ -349,73 +349,120 @@ export default function Dashboard({ onLogout }) {
           </div>
         </div>
 
-        {/* 🔹 Recent Entries (Last 5) */}
-        <div className="bg-gradient-to-br from-white/60 to-white/20 backdrop-blur-md rounded-3xl p-6 shadow-xl mt-6 border border-gray-200">
-          <h2 className="font-semibold text-lg text-gray-800 mb-4">Recent ROI Entries</h2>
+       {/* 🔹 Recent Entries (Last 5) */}
+<div className="bg-gradient-to-br from-white/70 to-white/30 backdrop-blur-md rounded-3xl p-6 shadow-xl mt-6 border border-gray-200">
+  {/* Header */}
+  <h2 className="font-semibold text-xl text-gray-800 mb-5 flex items-center gap-2">
+    📊 Recent Entries
+  </h2>
 
-          <div className="overflow-x-auto rounded-2xl">
-            <table className="w-full text-sm border-collapse border border-gray-200">
-              <thead className="bg-gray-100 rounded-t-2xl">
-                <tr>
-                  {["Date", "Revenue", "Expenses", "Profit", "Actions"].map((h, idx) => (
-                    <th key={idx} className="p-3 text-left text-gray-600 border-b">{h}</th>
-                  ))}
+  {/* Table */}
+  <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+    <table className="w-full text-sm border-collapse">
+      <thead>
+        <tr className="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
+          {["Date", "Revenue", "Expenses", "Profit", "Actions"].map((h, idx) => (
+            <th
+              key={idx}
+              className="p-3 text-left font-semibold border-b border-gray-200"
+            >
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody className="divide-y divide-gray-100">
+        {entries.length === 0 ? (
+          <tr>
+            <td
+              colSpan={6}
+              className="text-center p-6 text-gray-500 italic"
+            >
+              No entries found
+            </td>
+          </tr>
+        ) : (
+          [...entries]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5)
+            .map((e) => {
+              const pcSum = (e.purchaseCost || []).reduce(
+                (a, c) => a + (c.amount || 0),
+                0
+              );
+              const expensesObj = e.expenses || {};
+              const otherSum = Object.values(expensesObj).reduce((sum, val) => {
+                if (Array.isArray(val)) {
+                  return (
+                    sum +
+                    val.reduce((x, y) => x + (y.amount || 0), 0)
+                  );
+                } else if (typeof val === "number") {
+                  return sum + val;
+                }
+                return sum;
+              }, 0);
+
+              const expenses = pcSum + otherSum;
+              const profit = (e.totalRevenue || 0) - expenses;
+
+              return (
+                <tr
+                  key={e._id}
+                  className="hover:bg-gray-50 transition-all duration-300"
+                >
+                  <td className="p-3 font-medium text-gray-800">
+                    {new Date(e.date).toLocaleDateString()}
+                  </td>
+                  <td className="p-3 text-gray-700">
+                    {formatCurrency(e.totalRevenue)}
+                  </td>
+                  <td className="p-3 text-gray-700">
+                    {formatCurrency(expenses)}
+                  </td>
+                  <td
+                    className={`p-3 font-semibold ${
+                      profit >= 0 ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    {formatCurrency(profit)}
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => navigate(`/entries/${e._id}`)}
+                      className="p-2 bg-indigo-500 text-white rounded-full shadow hover:bg-indigo-600 transition flex items-center justify-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {entries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center p-4 text-gray-500">
-                      No entries found
-                    </td>
-                  </tr>
-                ) : (
-                  [...entries]
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .slice(0, 5)
-                    .map((e) => {
-                      const pcSum = (e.purchaseCost || []).reduce((a, c) => a + (c.amount || 0), 0);
-                      const expensesObj = e.expenses || {};
-                      const otherSum = Object.values(expensesObj).reduce((sum, val) => {
-                        if (Array.isArray(val)) {
-                          return sum + val.reduce((x, y) => x + (y.amount || 0), 0);
-                        } else if (typeof val === "number") {
-                          return sum + val;
-                        }
-                        return sum;
-                      }, 0);
-
-                      const expenses = pcSum + otherSum;
-                      const profit = (e.totalRevenue || 0) - expenses;
-
-                      return (
-                        <tr
-                          key={e._id}
-                          className="hover:bg-gray-50 transition-all duration-300 cursor-pointer"
-                        >
-                          <td className="p-3 border-b">{new Date(e.date).toLocaleDateString()}</td>
-                          <td className="p-3 border-b">{formatCurrency(e.totalRevenue)}</td>
-                          <td className="p-3 border-b">{formatCurrency(expenses)}</td>
-                          <td className="p-3 border-b">{formatCurrency(profit)}</td>
-                          <td className="p-3 border-b">
-                            <button
-                              onClick={() => navigate(`/entries/${e._id}`)}
-                              className="p-2 bg-indigo-500 text-white rounded-full shadow-md hover:bg-indigo-600 transition-all duration-300 flex items-center justify-center"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              );
+            })
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
 
       </main>
 

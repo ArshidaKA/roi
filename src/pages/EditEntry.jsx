@@ -33,6 +33,24 @@ export default function EditEntry() {
     enabled: !!id && me?.role === "STAFF",
   });
 
+  // ✅ Fetch staff data for calculated totals
+  const { data: staff = [] } = useQuery({
+    queryKey: ["staff"],
+    queryFn: async () => (await client.get("/staff")).data,
+  });
+  // ✅ Get calculated staff salary based on attendance (like AddEntry)
+const { data: salarySummary } = useQuery({
+  queryKey: ["salary-summary", entry?.date],
+  queryFn: async () =>
+    (await client.get(`/attendance/salary-summary?date=${entry?.date?.split("T")[0]}`)).data,
+  enabled: !!entry?.date,
+});
+
+const totalStaffSalary = salarySummary?.totalSalary || 0;
+const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation || 0), 0);
+
+
+
   // Build a Set of approved field paths for quick lookup
   const approvedPaths = useMemo(() => {
     const set = new Set();
@@ -50,8 +68,7 @@ export default function EditEntry() {
   const [totalRevenue, setTotalRevenue] = useState("");
   const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
   const [expenses, setExpenses] = useState({
-    staffSalary: [{ name: "", amount: "" }],
-    staffAccommodation: [{ name: "", amount: "" }],
+    // Removed staffSalary and staffAccommodation arrays
     food: "",
     rent: "",
     electricity: "",
@@ -77,14 +94,7 @@ export default function EditEntry() {
     );
     const ex = entry.expenses || {};
     setExpenses({
-      staffSalary: (ex.staffSalary || [{ name: "", amount: "" }]).map((s) => ({
-        name: s.name || "",
-        amount: s.amount ?? "",
-      })),
-      staffAccommodation: (ex.staffAccommodation || [{ name: "", amount: "" }]).map((s) => ({
-        name: s.name || "",
-        amount: s.amount ?? "",
-      })),
+      // Removed staffSalary and staffAccommodation from state
       food: ex.food ?? "",
       rent: ex.rent ?? "",
       electricity: ex.electricity ?? "",
@@ -155,11 +165,9 @@ export default function EditEntry() {
     purchaseCost: purchaseCost.map((p) => ({ item: p.item, amount: Number(p.amount || 0) })),
     expenses: {
       ...expenses,
-      staffSalary: expenses.staffSalary.map((s) => ({ name: s.name, amount: Number(s.amount || 0) })),
-      staffAccommodation: expenses.staffAccommodation.map((s) => ({
-        name: s.name,
-        amount: Number(s.amount || 0),
-      })),
+      // Add calculated staff totals as single values
+      staffSalary: [{ name: "Total Staff Salary", amount: totalStaffSalary }],
+      staffAccommodation: [{ name: "Total Staff Accommodation", amount: totalStaffAccommodation }],
       other: expenses.other.map((o) => ({ reason: o.reason, amount: Number(o.amount || 0) })),
       food: Number(expenses.food || 0),
       rent: Number(expenses.rent || 0),
@@ -230,30 +238,7 @@ export default function EditEntry() {
       }
     });
 
-    // expenses arrays
-    (expenses.staffSalary || []).forEach((s, i) => {
-      const base = entry.expenses?.staffSalary?.[i] || {};
-      const namePath = expArrPath("staffSalary", i, "name");
-      const amtPath = expArrPath("staffSalary", i, "amount");
-      if (!isDisabled(namePath) && (s.name || "") !== (base.name || "")) {
-        updates.push({ path: namePath, value: s.name });
-      }
-      if (!isDisabled(amtPath) && Number(s.amount || 0) !== Number(base.amount || 0)) {
-        updates.push({ path: amtPath, value: Number(s.amount || 0) });
-      }
-    });
-
-    (expenses.staffAccommodation || []).forEach((s, i) => {
-      const base = entry.expenses?.staffAccommodation?.[i] || {};
-      const namePath = expArrPath("staffAccommodation", i, "name");
-      const amtPath = expArrPath("staffAccommodation", i, "amount");
-      if (!isDisabled(namePath) && (s.name || "") !== (base.name || "")) {
-        updates.push({ path: namePath, value: s.name });
-      }
-      if (!isDisabled(amtPath) && Number(s.amount || 0) !== Number(base.amount || 0)) {
-        updates.push({ path: amtPath, value: Number(s.amount || 0) });
-      }
-    });
+    // Removed staffSalary and staffAccommodation array updates since they're now calculated
 
     (expenses.other || []).forEach((o, i) => {
       const base = entry.expenses?.other?.[i] || {};
@@ -369,25 +354,27 @@ export default function EditEntry() {
       <div className="space-y-6">
         <h2 className="text-lg font-medium text-gray-700">Expenses</h2>
 
-        {/* Arrays */}
-        <ArrayEditor
-          title="Staff Salary"
-          field="staffSalary"
-          data={expenses.staffSalary}
-          onChange={handleArrayChange(setExpenses)}
-          addArrayItem={addArrayItem(setExpenses)}
-          pathFn={(i, key) => expArrPath("staffSalary", i, key)}
-          isDisabled={isDisabled}
-        />
-        <ArrayEditor
-          title="Staff Accommodation"
-          field="staffAccommodation"
-          data={expenses.staffAccommodation}
-          onChange={handleArrayChange(setExpenses)}
-          addArrayItem={addArrayItem(setExpenses)}
-          pathFn={(i, key) => expArrPath("staffAccommodation", i, key)}
-          isDisabled={isDisabled}
-        />
+        {/* Staff Salary and Accommodation - Calculated Totals */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Total Staff Salary</label>
+            <div className="border-b border-gray-300 py-1 text-sm">
+              ₹{totalStaffSalary.toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-500">
+              Calculated from Staff Management
+            </p>
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Total Staff Accommodation</label>
+            <div className="border-b border-gray-300 py-1 text-sm">
+              ₹{totalStaffAccommodation.toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-500">
+              Calculated from Staff Management
+            </p>
+          </div>
+        </div>
 
         {/* Singles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

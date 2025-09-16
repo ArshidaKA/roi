@@ -14,6 +14,8 @@ import RegisterStaff from "./pages/Register";
 import LoadingSpinner from "./pages/compoents/LoadingSpinner";
 import EditEntry from "./pages/EditEntry";
 import EntrySummary from "./pages/EntrySummary";
+import StaffManagement from "./pages/StaffManagement";
+import ManageStaff from "./pages/manageStaff";
 
 export default function App() {
   const { data: me, isLoading } = useQuery({
@@ -49,6 +51,11 @@ if (isLoading) {
         {me?.role === "OWNER" && <Route path="/users" element={<Users />} />}
         <Route path="/entries" element={<Entries/>} />
         <Route path="/entries/summary" element={<EntrySummary />} />
+                <Route path="/staff" element={<StaffManagement/>} />
+                                <Route path="/manage-staff" element={<ManageStaff/>} />
+
+
+
 
 
 

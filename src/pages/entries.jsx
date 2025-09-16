@@ -32,7 +32,6 @@ export default function Entries() {
 
   const formatCurrency = (num) => `₹${Number(num || 0).toLocaleString("en-IN")}`;
 
-  // 🔹 Calculate total expenses (purchaseCost + expenses object)
   const calcExpenses = (entry) => {
     const purchaseCostSum = (entry.purchaseCost || []).reduce(
       (a, c) => a + (c.amount || 0),
@@ -53,21 +52,23 @@ export default function Entries() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto p-6 space-y-6">
-        {/* 🔹 Header */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <main className="max-w-7xl mx-auto p-6 space-y-8">
+        {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">📑 ROI Entries</h1>
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            📑 ROI Entries
+          </h1>
           <button
             onClick={() => navigate("/add")}
-            className="px-4 py-1 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition"
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-md hover:shadow-lg hover:scale-105 transform transition"
           >
             + Add Entry
           </button>
         </div>
 
-        {/* 🔹 Filter Controls */}
-        <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-xl shadow-md justify-between">
+        {/* Filter Controls */}
+        <div className="flex flex-wrap gap-4 items-center bg-white p-5 rounded-2xl shadow-lg border border-gray-100 justify-between">
           <div className="flex gap-4 items-center">
             <select
               value={filter}
@@ -76,7 +77,7 @@ export default function Entries() {
                 setStartDate("");
                 setEndDate("");
               }}
-              className="border border-gray-300 p-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 p-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             >
               <option value="lifetime">Lifetime</option>
               <option value="today">Today</option>
@@ -104,103 +105,105 @@ export default function Entries() {
             )}
           </div>
 
-          {/* 🔹 Main View Button */}
           <button
             onClick={() =>
               navigate(
                 `/entries/summary?filter=${filter}&startDate=${startDate}&endDate=${endDate}`
               )
             }
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow"
+            className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:scale-105 transform transition"
           >
-            View  →
+            View →
           </button>
         </div>
 
-        {/* 🔹 Entries Table */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-           {entries.length>20&&<h2 className="font-semibold text-lg mb-4 text-gray-700">
-            Entries List (Last 20)
-          </h2>}
+       {/* Entries Table */}
+<div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+  {entries.length > 20 && (
+    <h2 className="font-semibold text-lg mb-4 text-gray-700">
+      Entries List (Last 20)
+    </h2>
+  )}
 
-          {isLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <LoadingSpinner />
-            </div>
-          ) : entries.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No entries found</p>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200">
-              <table className="w-full text-sm text-left border-collapse">
-                <thead className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-xs uppercase tracking-wider">
-                  <tr>
-                    <th className="p-3 border-b">Date</th>
-                    <th className="p-3 border-b">Revenue</th>
-                    <th className="p-3 border-b">Expenses</th>
-                    <th className="p-3 border-b">Profit</th>
-                    <th className="p-3 border-b text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...entries]
-                    .sort((a, b) => new Date(b.date) - new Date(a.date)) // 🔹 Latest first
-                    .slice(0, 20) // 🔹 Show only last 20
-                    .map((e, i) => {
-                      const expenses = calcExpenses(e);
-                      const profit = (e.totalRevenue || 0) - expenses;
+  {isLoading ? (
+    <div className="flex items-center justify-center h-48">
+      <LoadingSpinner />
+    </div>
+  ) : entries.length === 0 ? (
+    <p className="text-gray-500 text-center py-8">No entries found</p>
+  ) : (
+    <div className="overflow-x-auto rounded-xl border border-gray-200">
+      <table className="w-full text-sm text-left border-collapse">
+        <thead className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-xs uppercase tracking-wider">
+          <tr>
+            <th className="p-4 border-b border-gray-200 rounded-tl-lg">Date</th>
+            <th className="p-4 border-b border-gray-200">Revenue</th>
+            <th className="p-4 border-b border-gray-200">Expenses</th>
+            <th className="p-4 border-b border-gray-200">Profit</th>
+            <th className="p-4 border-b border-gray-200 text-center rounded-tr-lg">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...entries]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 20)
+            .map((e, i) => {
+              const expenses = calcExpenses(e);
+              const profit = (e.totalRevenue || 0) - expenses;
 
-                      return (
-                        <tr
-                          key={e._id}
-                          className={`transition ${
-                            i % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          } hover:bg-blue-50`}
+              return (
+                <tr
+                  key={e._id}
+                  className={`transition hover:bg-blue-50/50 ${
+                    i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  }`}
+                >
+                  <td className="p-4 border-b border-gray-200 font-medium text-gray-700">
+                    {new Date(e.date).toLocaleDateString()}
+                  </td>
+                  <td className="p-4 border-b border-gray-200 font-semibold text-green-600">
+                    {formatCurrency(e.totalRevenue)}
+                  </td>
+                  <td className="p-4 border-b border-gray-200 text-red-600">
+                    {formatCurrency(expenses)}
+                  </td>
+                  <td
+                    className={`p-4 border-b border-gray-200 font-semibold ${
+                      profit >= 0 ? "text-green-700" : "text-red-700"
+                    }`}
+                  >
+                    {formatCurrency(profit)}
+                  </td>
+                  <td className="p-4 border-b border-gray-200 text-center">
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => navigate(`/entries/${e._id}`)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition"
+                      >
+                        View
+                      </button>
+
+                      {me?.role === "OWNER" && (
+                        <button
+                          onClick={() => navigate(`/entries/${e._id}/edit`)}
+                          className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 shadow-sm hover:shadow-md transition"
                         >
-                          <td className="p-3 border-b font-medium text-gray-700">
-                            {new Date(e.date).toLocaleDateString()}
-                          </td>
-                          <td className="p-3 border-b font-semibold text-green-600">
-                            {formatCurrency(e.totalRevenue)}
-                          </td>
-                          <td className="p-3 border-b text-red-600">
-                            {formatCurrency(expenses)}
-                          </td>
-                          <td
-                            className={`p-3 border-b font-semibold ${
-                              profit >= 0 ? "text-green-700" : "text-red-700"
-                            }`}
-                          >
-                            {formatCurrency(profit)}
-                          </td>
-                          <td className="p-3 border-b text-center">
-                            <div className="flex gap-2 justify-center">
-                              <button
-                                onClick={() => navigate(`/entries/${e._id}`)}
-                                className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                              >
-                                View
-                              </button>
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
 
-                              {me?.role === "OWNER" && (
-                                <button
-                                  onClick={() =>
-                                    navigate(`/entries/${e._id}/edit`)
-                                  }
-                                  className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                                >
-                                  Edit
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
       </main>
     </div>
   );

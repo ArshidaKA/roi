@@ -89,7 +89,7 @@ const staffHasApproved = approvedPaths.size > 0;
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+          className="px-4 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
         >
           ← Back
         </button>
@@ -99,12 +99,12 @@ const staffHasApproved = approvedPaths.size > 0;
   (me?.role === "STAFF" && staffHasApproved)) ? (
   <button
     onClick={() => navigate(`/entries/${id}/edit`)}
-    className={`px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition shadow-md
+    className={`px-4 py-1.5 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-white hover:from-yellow-500 hover:to-yellow-600 transition shadow-md
       ${me?.role === "STAFF" && !staffHasApproved ? "opacity-50 cursor-not-allowed hover:from-yellow-400 hover:to-yellow-500" : ""}
     `}
     disabled={me?.role === "STAFF" && !staffHasApproved}
   >
-    ✏️ Edit
+     Edit entry
   </button>
 ) : null}
 
@@ -168,195 +168,197 @@ const staffHasApproved = approvedPaths.size > 0;
       </div>
 
       {/* STAFF: Edit request form */}
-      {me?.role === "STAFF" && (
-        <div className="rounded-xl border p-6 shadow-md bg-white space-y-5">
-          <h2 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
-            📌 Request an Edit
-          </h2>
+     {me?.role === "STAFF" && (
+  <div className="rounded-2xl border border-gray-200 p-8 shadow-lg bg-gradient-to-br from-white to-gray-50 space-y-6">
+    {/* Header */}
+    <h2 className="font-semibold text-xl text-gray-800 flex items-center gap-2">
+      <span className="text-blue-600">📌</span> Request an Edit
+    </h2>
 
-          {/* Category */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Select Category</label>
-            <select
-              value={fieldPath.split(".")[0] || ""}
-              onChange={(e) => {
-                setFieldPath("");
-                setNewValue("");
-                setReason("");
-                setFieldPath(e.target.value);
-              }}
-              className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">-- Choose a category --</option>
-              <option value="revenue">Revenue</option>
-              {entry.purchaseCost?.length > 0 && (
-                <option value="purchaseCost">Purchase Cost</option>
-              )}
-              {Object.entries(entry.expenses || {}).some(([key, val]) =>
-                Array.isArray(val) ? val.some((i) => i.amount > 0) : val > 0
-              ) && <option value="expenses">Expenses</option>}
-              {(entry.expenses?.staffSalary?.length > 0 ||
-                entry.expenses?.staffAccommodation?.length > 0) && (
-                <option value="staff">Staff</option>
-              )}
-            </select>
-          </div>
+    {/* Category */}
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-gray-700">Select Category</label>
+      <select
+        value={fieldPath.split(".")[0] || ""}
+        onChange={(e) => {
+          setFieldPath("");
+          setNewValue("");
+          setReason("");
+          setFieldPath(e.target.value);
+        }}
+        className="mt-1 border border-gray-300 rounded-xl p-3 w-full text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      >
+        <option value="">-- Choose a category --</option>
+        <option value="revenue">Revenue</option>
+        {entry.purchaseCost?.length > 0 && (
+          <option value="purchaseCost">Purchase Cost</option>
+        )}
+        <option value="expenses">Expenses</option>
+      </select>
+    </div>
 
-          {/* Dynamic fields */}
-          {/* Revenue Fields */}
-          {fieldPath === "revenue" && (
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Select Field</label>
-              <select
-                onChange={(e) => setFieldPath(e.target.value)}
-                className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Select field --</option>
-                <option value="totalRevenue">
-                  Total Revenue ({entry.totalRevenue})
+    {/* Revenue */}
+    {fieldPath === "revenue" && (
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Select Field</label>
+        <select
+          onChange={(e) => setFieldPath(e.target.value)}
+          className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+          <option value="">-- Select field --</option>
+          <option value="totalRevenue">
+            Total Revenue ({entry.totalRevenue})
+          </option>
+          <option value="date">
+            Date ({new Date(entry.date).toLocaleDateString()})
+          </option>
+        </select>
+      </div>
+    )}
+
+    {/* Purchase Cost */}
+    {fieldPath === "purchaseCost" && (
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Select Item</label>
+        <select
+          onChange={(e) => setFieldPath(e.target.value)}
+          className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+          <option value="">-- Select item --</option>
+          {entry.purchaseCost
+            .filter((p) => p.amount > 0)
+            .map((p, i) => (
+              <optgroup key={i} label={`Item ${i + 1}`}>
+                <option value={`purchaseCost[${i}].item`}>
+                  Name ({p.item})
                 </option>
-                <option value="date">
-                  Date ({new Date(entry.date).toLocaleDateString()})
+                <option value={`purchaseCost[${i}].amount`}>
+                  Amount ({p.amount})
                 </option>
-              </select>
-            </div>
-          )}
+              </optgroup>
+            ))}
+        </select>
+      </div>
+    )}
 
-          {/* Purchase Cost */}
-          {fieldPath === "purchaseCost" && (
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Select Item</label>
-              <select
-                onChange={(e) => setFieldPath(e.target.value)}
-                className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Select item --</option>
-                {entry.purchaseCost
-                  .filter((p) => p.amount > 0)
-                  .map((p, i) => (
-                    <optgroup key={i} label={`Item ${i + 1}`}>
-                      <option value={`purchaseCost[${i}].item`}>
-                        Name ({p.item})
-                      </option>
-                      <option value={`purchaseCost[${i}].amount`}>
-                        Amount ({p.amount})
-                      </option>
-                    </optgroup>
-                  ))}
-              </select>
-            </div>
-          )}
+    {/* Expenses */}
+    {fieldPath === "expenses" && (
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Select Expense</label>
+        <select
+          onChange={(e) => setFieldPath(e.target.value)}
+          className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+          <option value="">-- Select expense --</option>
+          {Object.entries(entry.expenses || {}).map(([key, val]) => {
+            let displayVal = "";
+            if (Array.isArray(val)) {
+              displayVal = val.reduce((s, i) => s + (i.amount || 0), 0);
+            } else if (typeof val === "object" && val !== null) {
+              displayVal = val.amount || 0;
+            } else {
+              displayVal = val;
+            }
+            return (
+              <option key={key} value={`expenses.${key}`}>
+                {key.replace(/([A-Z])/g, " $1")} ({displayVal})
+              </option>
+            );
+          })}
+          <option value="expenses.other">Other</option>
+        </select>
+      </div>
+    )}
 
-          {/* Expenses */}
-          {fieldPath === "expenses" && (
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Select Expense</label>
-              <select
-                onChange={(e) => setFieldPath(e.target.value)}
-                className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Select expense --</option>
-                {Object.entries(entry.expenses).map(([key, val]) => {
-                  if (Array.isArray(val)) return null;
-                  if (!val || val === 0) return null;
-                  return (
-                    <option key={key} value={`expenses.${key}`}>
-                      {key.replace(/([A-Z])/g, " $1")} ({val})
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          )}
+    {/* Staff */}
+    {fieldPath === "staff" && (
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Select Staff</label>
+        <select
+          onChange={(e) => setFieldPath(e.target.value)}
+          className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        >
+          <option value="">-- Select staff field --</option>
+          {entry.expenses?.staffSalary?.map((s, i) => (
+            <optgroup key={`ss-${i}`} label={`Salary - Staff ${i + 1}`}>
+              {s.name && (
+                <option value={`expenses.staffSalary[${i}].name`}>
+                  Name ({s.name})
+                </option>
+              )}
+              {s.amount > 0 && (
+                <option value={`expenses.staffSalary[${i}].amount`}>
+                  Amount ({s.amount})
+                </option>
+              )}
+            </optgroup>
+          ))}
+          {entry.expenses?.staffAccommodation?.map((s, i) => (
+            <optgroup key={`sa-${i}`} label={`Accommodation - Staff ${i + 1}`}>
+              {s.name && (
+                <option value={`expenses.staffAccommodation[${i}].name`}>
+                  Name ({s.name})
+                </option>
+              )}
+              {s.amount > 0 && (
+                <option value={`expenses.staffAccommodation[${i}].amount`}>
+                  Amount ({s.amount})
+                </option>
+              )}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+    )}
 
-          {/* Staff */}
-          {fieldPath === "staff" && (
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Select Staff</label>
-              <select
-                onChange={(e) => setFieldPath(e.target.value)}
-                className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Select staff field --</option>
-                {entry.expenses?.staffSalary?.map((s, i) => (
-                  <optgroup key={`ss-${i}`} label={`Salary - Staff ${i + 1}`}>
-                    {s.name && (
-                      <option value={`expenses.staffSalary[${i}].name`}>
-                        Name ({s.name})
-                      </option>
-                    )}
-                    {s.amount > 0 && (
-                      <option value={`expenses.staffSalary[${i}].amount`}>
-                        Amount ({s.amount})
-                      </option>
-                    )}
-                  </optgroup>
-                ))}
-                {entry.expenses?.staffAccommodation?.map((s, i) => (
-                  <optgroup key={`sa-${i}`} label={`Accommodation - Staff ${i + 1}`}>
-                    {s.name && (
-                      <option value={`expenses.staffAccommodation[${i}].name`}>
-                        Name ({s.name})
-                      </option>
-                    )}
-                    {s.amount > 0 && (
-                      <option value={`expenses.staffAccommodation[${i}].amount`}>
-                        Amount ({s.amount})
-                      </option>
-                    )}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-          )}
+    {/* New Value */}
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-gray-700">New Value</label>
+      <input
+        value={newValue}
+        onChange={(e) => setNewValue(e.target.value)}
+        className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        placeholder="Enter new value"
+      />
+    </div>
 
-          {/* New Value */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">New Value</label>
-            <input
-              value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter new value"
-            />
-          </div>
+    {/* Reason */}
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-gray-700">Reason</label>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        placeholder="Why should this be updated?"
+        rows={3}
+      />
+    </div>
 
-          {/* Reason */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Reason</label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="mt-1 border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              placeholder="Why should this be updated?"
-              rows={3}
-            />
-          </div>
+    {/* Actions */}
+    <div className="flex gap-4 pt-3">
+      <button
+        onClick={() =>
+          reqEdit.mutate({ entryId: id, fieldPath, newValue, reason })
+        }
+        disabled={!fieldPath || !newValue || !reason}
+        className="px-6 py-2 rounded-xl text-white font-medium shadow-md bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition"
+      >
+        Send Request
+      </button>
+      <button
+        onClick={() => {
+          setFieldPath("");
+          setNewValue("");
+          setReason("");
+        }}
+        className="px-6 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
+      >
+        Clear
+      </button>
+    </div>
+  </div>
+)}
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={() =>
-                reqEdit.mutate({ entryId: id, fieldPath, newValue, reason })
-              }
-              disabled={!fieldPath || !newValue || !reason}
-              className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition shadow-sm"
-            >
-              Send Request
-            </button>
-            <button
-              onClick={() => {
-                setFieldPath("");
-                setNewValue("");
-                setReason("");
-              }}
-              className="px-5 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
-            >
-               Clear
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

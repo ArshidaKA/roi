@@ -10,6 +10,10 @@ import withReactContent from "sweetalert2-react-content";
 const MySwal = withReactContent(Swal);
 
 export default function AddEntry() {
+  const today = new Date().toISOString().split("T")[0];
+
+    const [date, setDate] = useState(today);
+
   const navigate = useNavigate();
 
   // ✅ Fetch logged-in user
@@ -24,13 +28,32 @@ export default function AddEntry() {
     queryFn: async () => (await client.get("/roi")).data,
   });
 
-  const today = new Date().toISOString().split("T")[0];
-  const [date, setDate] = useState(today);
+  // ✅ Fetch staff data for calculated totals
+  const { data: staff = [] } = useQuery({
+    queryKey: ["staff"],
+    queryFn: async () => (await client.get("/staff")).data,
+  });
+
+  
+  // ✅ Fetch calculated salary from backend
+const { data: salarySummary } = useQuery({
+  queryKey: ["salary-summary", date],
+  queryFn: async () => (await client.get(`/attendance/salary-summary?date=${date}`)).data,
+  enabled: !!date,
+});
+console.log(salarySummary,"kqlhsbiwyh")
+
+
+
   const [totalRevenue, setTotalRevenue] = useState("");
   const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
+  
+  // Calculate totals from staff data
+const totalStaffSalary = salarySummary?.totalSalary || 0;
+  const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation || 0), 0);
+  
   const [expenses, setExpenses] = useState({
-    staffSalary: [{ name: "", amount: "" }],
-    staffAccommodation: [{ name: "", amount: "" }],
+    // Removed staffSalary and staffAccommodation arrays
     food: "",
     rent: "",
     electricity: "",
@@ -104,14 +127,9 @@ export default function AddEntry() {
           })),
           expenses: {
             ...expenses,
-            staffSalary: expenses.staffSalary.map((s) => ({
-              name: s.name,
-              amount: Number(s.amount),
-            })),
-            staffAccommodation: expenses.staffAccommodation.map((s) => ({
-              name: s.name,
-              amount: Number(s.amount),
-            })),
+            // Add calculated staff totals as single values
+            staffSalary: [{ name: "Total Staff Salary", amount: totalStaffSalary }],
+            staffAccommodation: [{ name: "Total Staff Accommodation", amount: totalStaffAccommodation }],
             other: expenses.other.map((o) => ({
               reason: o.reason,
               amount: Number(o.amount),
@@ -179,21 +197,27 @@ export default function AddEntry() {
       <div className="space-y-6">
         <h2 className="text-lg font-medium text-gray-700">Expenses</h2>
 
-        <ExpenseArray
-          title="Staff Salary"
-          field="staffSalary"
-          data={expenses.staffSalary}
-          handleChange={handleArrayChange}
-          addArrayItem={addArrayItem}
-        />
-
-        <ExpenseArray
-          title="Staff Accommodation"
-          field="staffAccommodation"
-          data={expenses.staffAccommodation}
-          handleChange={handleArrayChange}
-          addArrayItem={addArrayItem}
-        />
+        {/* Staff Salary and Accommodation - Calculated Totals */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Total Staff Salary</label>
+            <div className="border-b border-gray-300 py-1 text-sm">
+              ₹{totalStaffSalary.toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-500">
+              Calculated from Staff Management
+            </p>
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Total Staff Accommodation</label>
+            <div className="border-b border-gray-300 py-1 text-sm">
+              ₹{totalStaffAccommodation.toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-500">
+              Calculated from Staff Management
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[

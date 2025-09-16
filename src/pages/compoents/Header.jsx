@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import client from "../../api/client";
+import { FiUsers } from "react-icons/fi";
 
 export default function NavbarWithLogout({ user }) {
   // ✅ Fetch pending requests count
@@ -83,6 +84,9 @@ export default function NavbarWithLogout({ user }) {
                 </span>
               )}
             </Link>
+            <Link to="/staff" className="flex items-center gap-2 px-4 py-2 hover:text-blue-200 ">
+  <FiUsers/> Staff Management
+</Link>
           </div>
         </div>
 
