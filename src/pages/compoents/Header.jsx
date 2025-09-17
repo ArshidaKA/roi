@@ -50,13 +50,14 @@ export default function NavbarWithLogout({ user }) {
         {/* Centered Nav Links */}
         <div className="flex-1 flex justify-center">
           <div className="flex items-center gap-8 font-medium text-white">
+            {user?.role === "OWNER" && (
             <Link
               to="/dashboard"
               className="hover:text-blue-200 transition-colors"
             >
               Dashboard
             </Link>
-
+            )}
             <Link
               to="/entries"
               className="hover:text-blue-200 transition-colors"

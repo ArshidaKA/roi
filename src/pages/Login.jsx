@@ -13,34 +13,40 @@ export default function Auth() {
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true); // ✅ Start loading
-
-    try {
-      let res;
-      if (mode === "login") {
-        res = await client.post("/auth/login", {
-          email: form.email,
-          password: form.password,
-        });
-      } else {
-        res = await client.post("/auth/register", form);
-      }
-
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-      }
-
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false); // ✅ Stop loading
+  try {
+    let res;
+    if (mode === "login") {
+      res = await client.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+    } else {
+      res = await client.post("/auth/register", form);
     }
-  };
+
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
+    }
+
+    // ✅ Role-based navigation
+    const userRole = res.data.user?.role;
+    if (userRole === "owner") {
+      navigate("/dashboard");
+    } else {
+      navigate("/entries");
+    }
+  } catch (err) {
+    setError(err.response?.data?.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">

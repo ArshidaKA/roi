@@ -197,6 +197,7 @@ export default function ManageStaff() {
               type="number"
               placeholder="₹ Salary"
               value={formData.salary}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) =>
                 setFormData({ ...formData, salary: e.target.value })
               }
@@ -212,6 +213,8 @@ export default function ManageStaff() {
               type="number"
               placeholder="₹ Amount"
               value={formData.accommodation}
+              onWheel={(e) => e.target.blur()}
+
               onChange={(e) =>
                 setFormData({ ...formData, accommodation: e.target.value })
               }

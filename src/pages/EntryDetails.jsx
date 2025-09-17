@@ -80,8 +80,7 @@ const approvedPaths = new Set(
 );
 
 const staffHasApproved = approvedPaths.size > 0;
-  console.log("staffHasApproved", staffHasApproved);
-
+console.log(expenseTotals,"in entry details");
   
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -142,15 +141,16 @@ const staffHasApproved = approvedPaths.size > 0;
                 Expenses
               </td>
             </tr>
-            {expenseTotals.map(([key, val]) => (
-              <tr key={key}>
-                <td className="p-3 capitalize text-gray-700">
-                  {key.replace(/([A-Z])/g, " $1")}
-                </td>
-                <td className="p-3 text-right">{fmt(val)}</td>
-              </tr>
-            ))}
-
+           {expenseTotals.map(([key, val]) => (
+  <tr key={key}>
+    <td className="p-3 capitalize text-gray-700">
+      {key === "foodRefreshment" ? "Food & Refreshment" : 
+       key === "mobileInternet" ? "Mobile & Internet" : 
+       key.replace(/([A-Z])/g, " $1")}
+    </td>
+    <td className="p-3 text-right">{fmt(val)}</td>
+  </tr>
+))}
             <tr className="bg-gray-50 font-semibold">
               <td className="p-3">Total Cost of Operations</td>
               <td className="p-3 text-right">{fmt(totalOperationsCost)}</td>
@@ -209,9 +209,9 @@ const staffHasApproved = approvedPaths.size > 0;
           <option value="totalRevenue">
             Total Revenue ({entry.totalRevenue})
           </option>
-          <option value="date">
+          {/* <option value="date">
             Date ({new Date(entry.date).toLocaleDateString()})
-          </option>
+          </option> */}
         </select>
       </div>
     )}
@@ -225,6 +225,7 @@ const staffHasApproved = approvedPaths.size > 0;
           className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         >
           <option value="">-- Select item --</option>
+          
           {entry.purchaseCost
             .filter((p) => p.amount > 0)
             .map((p, i) => (
@@ -242,6 +243,7 @@ const staffHasApproved = approvedPaths.size > 0;
     )}
 
     {/* Expenses */}
+       {/* Expenses */}
     {fieldPath === "expenses" && (
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">Select Expense</label>
@@ -250,25 +252,46 @@ const staffHasApproved = approvedPaths.size > 0;
           className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         >
           <option value="">-- Select expense --</option>
-          {Object.entries(entry.expenses || {}).map(([key, val]) => {
-            let displayVal = "";
-            if (Array.isArray(val)) {
-              displayVal = val.reduce((s, i) => s + (i.amount || 0), 0);
-            } else if (typeof val === "object" && val !== null) {
-              displayVal = val.amount || 0;
-            } else {
-              displayVal = val;
-            }
-            return (
-              <option key={key} value={`expenses.${key}`}>
-                {key.replace(/([A-Z])/g, " $1")} ({displayVal})
-              </option>
-            );
-          })}
+       {Object.entries(entry.expenses || {}).map(([key, val]) => {
+  // 🚫 Skip staff fields
+  if (key === "staffSalary" || key === "staffAccommodation") return null;
+
+  // ✅ Special handling for "other"
+  if (key === "other" && Array.isArray(val)) {
+    return val.map((o, i) => (
+      <option key={`other-${i}`} value={`expenses.other[${i}].amount`}>
+        Other - {o.reason || `Reason ${i + 1}`} ({o.amount})
+      </option>
+    ));
+  }
+
+  // Default display
+  let displayVal = "";
+  if (Array.isArray(val)) {
+    displayVal = val.reduce((s, i) => s + (i.amount || 0), 0);
+  } else if (typeof val === "object" && val !== null) {
+    displayVal = val.amount || 0;
+  } else {
+    displayVal = val;
+  }
+
+  return (
+    <option key={key} value={`expenses.${key}`}>
+      {key === "foodRefreshment"
+        ? "Food & Refreshment"
+        : key === "mobileInternet"
+        ? "Mobile & Internet"
+        : key.replace(/([A-Z])/g, " $1")}{" "}
+      ({displayVal})
+    </option>
+  );
+})}
+
           <option value="expenses.other">Other</option>
         </select>
       </div>
     )}
+
 
     {/* Staff */}
     {fieldPath === "staff" && (

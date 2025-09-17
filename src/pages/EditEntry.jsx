@@ -69,11 +69,11 @@ const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation 
   const [purchaseCost, setPurchaseCost] = useState([{ item: "", amount: "" }]);
   const [expenses, setExpenses] = useState({
     // Removed staffSalary and staffAccommodation arrays
-    food: "",
+     foodRefreshment: "",
     rent: "",
     electricity: "",
     travelFuel: "",
-    mobInternet: "",
+   mobileInternet: "",
     maintenance: "",
     transport: "",
     marketing: "",
@@ -95,11 +95,11 @@ const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation 
     const ex = entry.expenses || {};
     setExpenses({
       // Removed staffSalary and staffAccommodation from state
-      food: ex.food ?? "",
+      foodRefreshment: ex.foodRefreshment ?? "",
       rent: ex.rent ?? "",
       electricity: ex.electricity ?? "",
       travelFuel: ex.travelFuel ?? "",
-      mobInternet: ex.mobInternet ?? "",
+      mobileInternet: ex.mobileInternet ?? "",
       maintenance: ex.maintenance ?? "",
       transport: ex.transport ?? "",
       marketing: ex.marketing ?? "",
@@ -169,11 +169,11 @@ const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation 
       staffSalary: [{ name: "Total Staff Salary", amount: totalStaffSalary }],
       staffAccommodation: [{ name: "Total Staff Accommodation", amount: totalStaffAccommodation }],
       other: expenses.other.map((o) => ({ reason: o.reason, amount: Number(o.amount || 0) })),
-      food: Number(expenses.food || 0),
+        foodRefreshment: Number(expenses.foodRefreshment || 0),
       rent: Number(expenses.rent || 0),
       electricity: Number(expenses.electricity || 0),
       travelFuel: Number(expenses.travelFuel || 0),
-      mobInternet: Number(expenses.mobInternet || 0),
+      mobileInternet: Number(expenses.mobileInternet || 0),
       maintenance: Number(expenses.maintenance || 0),
       transport: Number(expenses.transport || 0),
       marketing: Number(expenses.marketing || 0),
@@ -217,11 +217,11 @@ const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation 
 
     // expenses singles
     [
-      "food",
+      "foodRefreshment",
       "rent",
       "electricity",
       "travelFuel",
-      "mobInternet",
+      "mobileInternet",
       "maintenance",
       "transport",
       "marketing",
@@ -379,11 +379,11 @@ const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation 
         {/* Singles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
-            ["food", "Food & Refreshment"],
+            ["foodRefreshment", "Food & Refreshment"],
             ["rent", "Rent"],
             ["electricity", "Electricity"],
             ["travelFuel", "Travel & Fuel"],
-            ["mobInternet", "Mob & Internet"],
+            ["mobileInternet", "Mob & Internet"],
             ["maintenance", "Maintenance"],
             ["transport", "Transport"],
             ["marketing", "Marketing"],
@@ -492,6 +492,7 @@ function ArrayEditor({ title, field, data, onChange, addArrayItem, pathFn, isDis
       >
         + Add {title}
       </button>
+      
     </div>
   );
 }

@@ -319,7 +319,7 @@ export default function Dashboard({ onLogout }) {
                         onClick={() =>
                           setDialog({ open: true, action: "APPROVED", requestId: r._id })
                         }
-                        className="px-4 py-2 bg-green-500 text-white rounded-2xl shadow hover:bg-green-600 transition-all duration-300"
+                        className="px-4 py-1 bg-green-500 text-white rounded-2xl shadow hover:bg-green-600 transition-all duration-300"
                       >
                         Approve
                       </button>
@@ -327,7 +327,7 @@ export default function Dashboard({ onLogout }) {
                         onClick={() =>
                           setDialog({ open: true, action: "REJECTED", requestId: r._id })
                         }
-                        className="px-4 py-2 bg-red-500 text-white rounded-2xl shadow hover:bg-red-600 transition-all duration-300"
+                        className="px-4 py-1 bg-red-500 text-white rounded-2xl shadow hover:bg-red-600 transition-all duration-300"
                       >
                         Decline
                       </button>

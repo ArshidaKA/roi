@@ -66,7 +66,7 @@ export default function StaffManagement() {
         </h1>
         <button
           onClick={() => navigate("/manage-staff")}
-          className="px-4 py-1.5 bg-blue-500 text-white rounded-md hover:bg-gray-700 transition"
+          className="px-4 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition"
         >
           Manage Staff
         </button>

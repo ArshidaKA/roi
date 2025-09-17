@@ -52,13 +52,14 @@ console.log(salarySummary,"kqlhsbiwyh")
 const totalStaffSalary = salarySummary?.totalSalary || 0;
   const totalStaffAccommodation = staff.reduce((sum, s) => sum + (s.accommodation || 0), 0);
   
+  
   const [expenses, setExpenses] = useState({
     // Removed staffSalary and staffAccommodation arrays
-    food: "",
+      foodRefreshment: "",
     rent: "",
     electricity: "",
     travelFuel: "",
-    mobInternet: "",
+    mobileInternet: "",
     maintenance: "",
     transport: "",
     marketing: "",
@@ -221,11 +222,11 @@ const totalStaffSalary = salarySummary?.totalSalary || 0;
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
-            ["food", "Food & Refreshment"],
+            ["foodRefreshment", "Food & Refreshment"],
             ["rent", "Rent"],
             ["electricity", "Electricity"],
             ["travelFuel", "Travel & Fuel"],
-            ["mobInternet", "Mob & Internet"],
+            ["mobileInternet", "Mob & Internet"],
             ["maintenance", "Maintenance"],
             ["transport", "Transport"],
             ["marketing", "Marketing"],
