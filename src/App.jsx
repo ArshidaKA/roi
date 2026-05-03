@@ -16,6 +16,7 @@ import EditEntry from "./pages/EditEntry";
 import EntrySummary from "./pages/EntrySummary";
 import StaffManagement from "./pages/StaffManagement";
 import ManageStaff from "./pages/manageStaff";
+import StockManagement from "./pages/StockManagement";
 
 export default function App() {
   const { data: me, isLoading } = useQuery({
@@ -53,6 +54,7 @@ if (isLoading) {
         <Route path="/entries/summary" element={<EntrySummary />} />
                 <Route path="/staff" element={<StaffManagement/>} />
                                 <Route path="/manage-staff" element={<ManageStaff/>} />
+                                  <Route path="/stock" element={<StockManagement/>} />
 
 
 

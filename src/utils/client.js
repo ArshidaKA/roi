@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const client = axios.create({
-  baseURL: "http://localhost:5000/api", // ✅ Change this to your backend base URL
+  baseURL: "https://roi-server-bjgg.onrender.com/api", // ✅ Change this to your backend base URL
   withCredentials: true, // if you use cookies / auth
   headers: {
     "Content-Type": "application/json",
