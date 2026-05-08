@@ -87,7 +87,7 @@ export default function ManageStaff() {
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Staff Management</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Manage staff</h1>
         <button
           onClick={() => openModal()}
           className="flex items-center gap-2 px-5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition"
@@ -106,7 +106,7 @@ export default function ManageStaff() {
               <th className="px-6 py-3 text-left">Name</th>
               <th className="px-6 py-3 text-left">Role</th>
               <th className="px-6 py-3 text-right">Salary</th>
-              <th className="px-6 py-3 text-right">Accommodation (per day)</th>
+              {/* <th className="px-6 py-3 text-right">Accommodation (per day)</th> */}
               <th className="px-6 py-3 text-center">Actions</th>
             </tr>
           </thead>
@@ -116,7 +116,7 @@ export default function ManageStaff() {
                 <td className="px-6 py-3">{s.name}</td>
                 <td className="px-6 py-3">{s.role}</td>
                 <td className="px-6 py-3 text-right">₹{s.salary?.toLocaleString()}</td>
-                <td className="px-6 py-3 text-right">₹{s.accommodation?.toLocaleString()}</td>
+                {/* <td className="px-6 py-3 text-right">₹{s.accommodation?.toLocaleString()}</td> */}
                 <td className="px-6 py-3 text-center space-x-3">
                   <button
                     onClick={() => openModal(s)}
@@ -206,20 +206,8 @@ export default function ManageStaff() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Accommodation (per day)
-            </label>
-            <input
-              type="number"
-              placeholder="₹ Amount"
-              value={formData.accommodation}
-              onWheel={(e) => e.target.blur()}
-
-              onChange={(e) =>
-                setFormData({ ...formData, accommodation: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            />
+          
+           
           </div>
         </div>
 
